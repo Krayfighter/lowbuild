@@ -1,0 +1,27 @@
+
+[config]
+# C compiler to use
+CC = "gcc"
+# C++ compiler to use
+CXX = "g++"
+
+# the name of this target is `cargoproject`
+[target.cargoproject]
+# cargo root dir
+dir = "./testcargo"
+# rust-cargo = build rust using cargo
+build = "rust-cargo"
+
+# the name of this target is helloc
+[target.helloc]
+# base source dir relative to this file
+# (usually where you put main.c)
+dir = "./helloc"
+# what build system to use
+# (c-lowbuild = use lowbuild in-house to build c)
+build = "c-lowbuild"
+# relative to `dir` unless predicated with `/`
+# does not override system defaults, appends
+includes = ["include"]
+
+
