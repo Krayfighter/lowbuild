@@ -1,0 +1,28 @@
+
+BuildConfig (
+    config: (
+        cc: "gcc",
+        // implicit cxx: None
+    ),
+    targets: {
+        // add a cargo subproject
+        "rust_target": RustCargo (
+            // the cargo base dir relative to this file
+            dir: "testcargo",
+        ),
+        "helloc": CLowBuild (
+            dir: "helloc",
+            includes: ["./include/"],
+            links: ["../clib/"]
+            // to use a custom compiler or avoid overriding global CC
+            // or CXX use Custom("mycompiler") assumes astandard
+            // compiler invocation
+            compiler: CC
+        )
+        // "clib": CLowBuild (
+        //     dir: "clib",
+        //     compiler: CC.
+        // )
+    }
+)
+
