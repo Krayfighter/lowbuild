@@ -8,9 +8,10 @@ use anyhow::Result;
 use clap::{Parser, Subcommand};
 
 mod build;
-use build::*;
+// use build::*;
 
 mod target;
+mod config;
 
 #[derive(Subcommand)]
 enum Command {
@@ -31,23 +32,31 @@ enum Command {
     long_about = None,
 )]
 struct Args {
-    // choose how to run lowbuild
+    /// choose how to run lowbuild
     #[command(subcommand)]
     action: Command,
-    // #[commands(subcommands)]
-    // commands: Option<Commands>,
 }
 
 
 fn main() -> Result<()> {
 
+    use ron::extensions::Extensions;
+
     let args = Args::parse();
-    
-    std::fs::try_exists("./lowbuild.toml")?;
-    let config_str = std::fs::read_to_string("lowbuild.toml")?;
-    let config_toml = config_str.as_str().parse::<toml::Table>()?;
-    // println!("raw file:\n{}", &config_str);
-    // println!("file parsed:\n{}", config_toml);
+
+    let ron_parser = ron::Options::default()
+        .with_default_extension(Extensions::IMPLICIT_SOME)
+        .with_default_extension(Extensions::UNWRAP_VARIANT_NEWTYPES);
+        // unavailable for some reason
+        // .with_default_extension(Extensions::EXPLICIT_STRUCT_NAMES);
+
+    std::fs::try_exists("./lowbuild.ron")
+        .expect("now config file lowbuild.ron in this directory");
+    let buildconfig: config::BuildConfig = ron_parser.from_str(
+        &std::fs::read_to_string("lowbuild.ron")?
+    )?;
+
+    println!("config: {:?}", buildconfig);
 
     match &args.action {
         Command::Run { name } => {
@@ -55,15 +64,13 @@ fn main() -> Result<()> {
             // let build = Build::new()
         },
         Command::Build{ name } => {
-            let build = Build::new_file(config_toml, name.clone())?;
-            build.build()?;
+            let mut builder = build::Build::new_file(buildconfig, name.clone())?;
+            println!("builder: {:?}", builder);
+            builder.build()?;
         }
         Command::BuildAll => {
-            Build::new(config_toml)?.build()?;
+            build::Build::new(buildconfig)?.build()?;
         },
-        // None => {
-        //     println!("must use a command {run, build}");
-        // }
     }
 
     return Ok(());

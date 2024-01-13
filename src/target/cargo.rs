@@ -6,39 +6,30 @@ use anyhow::Result;
 
 #[derive(Debug)]
 pub struct CargoTarget {
-    // deps: Vec<Target>,
-    id: uuid::Uuid,
-    deps: Vec<uuid::Uuid>,
+    name: String,
+    deps: Vec<String>,
     base_dir: std::path::PathBuf,
     // link_dirs: Vec<std::path::PathBuf>,
     // include_dirs: Vec<std::path::PathBuf>,
 }
 
 impl CargoTarget {
-    pub fn new(base_dir: String) -> Result<Self> {
-        let id = uuid::Uuid::new_v4();
-        let base_dir = std::path::PathBuf::from(base_dir);
-        std::fs::try_exists(&base_dir)?;
-
-        return Ok( Self {
-            id,
-            deps: vec!(),
-            base_dir,
-        } );
+    pub fn from_config(
+        config: crate::config::CargoTargetConfig,
+        name: String,
+    ) -> Self {
+        return Self {
+            name,
+            deps: config.deps.unwrap_or_default(),
+            base_dir: config.dir,
+        }
     }
 }
 
 impl Target for CargoTarget {
-    fn dependencies(&self) -> Vec<uuid::Uuid> {
-        return self.deps.clone();
-    }
-
-    fn uuid(&self) -> uuid::Uuid { return self.id; }
-
+    fn name(&self) -> String { return self.name.clone(); }
+    fn deps(&self) -> Vec<String> { return self.deps.clone(); }
     fn should_recompile(&self) -> bool {todo!();}
-    fn add_link_dir(&mut self, dir: std::path::PathBuf) {todo!();}
-    fn add_include_dir(&mut self, dir: std::path::PathBuf) {todo!();}
-
     fn compile(&self) -> Result<()> {
         // let mut command_buffer = String::from("cd ") + &self.base_dir.into_os_string().into_string().unwrap();
         // command_buffer += " && cargo build"
